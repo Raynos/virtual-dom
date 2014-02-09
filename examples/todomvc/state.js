@@ -11,16 +11,46 @@ var defaultState = {
 
 module.exports = State
 
-function State(initialState) {
+function State(inputs, initialState) {
     initialState = initialState || defaultState
 
     var state = ObservHash({
         todos: ObservArray(initialState.todos),
         route: Observ(initialState.route),
         evs: {
-            todos: uuid()
+            todos: uuid(),
+            todo: uuid()
         }
     })
 
+    inputs.route(function (route) {
+        state.route.set(route.hash)
+    })
+
+    inputs.todos.toggleAll(function (ev) {
+        state.todos.forEach(function(todo) {
+            todo.completed.set(!todo.completed())
+        })
+    })
+
+    inputs.todos.add(function () {
+
+    })
+
+    inputs.todos.textChange(function () {
+
+    })
+
+    TodoState(inputs.todo, state.todos)
+
+
     return state
+}
+
+function TodoState(inputs, list) {
+    inputs.toggle
+    inputs.editing
+    inputs.destroy
+    inputs.textChange
+    inputs.edit
 }

@@ -64,13 +64,16 @@ function todoItem(todo, evs) {
             h("input.toggle", {
                 type: "checkbox",
                 checked: todo.completed,
-                "data-change": event(evs.todo, "toggle", todo.completed)
+                "data-change": event(evs.todo, "toggle", {
+                    id: todo.id,
+                    completed: todo.completed
+                })
             }),
             h("label", {
-                "data-dblclick": event(evs.todo, "editing")
+                "data-dblclick": event(evs.todo, "editing", { id: todo.id })
             }, todo.title),
             h("button.destroy", {
-                "data-click": event(evs.todo, "destroy", todo.id)
+                "data-click": event(evs.todo, "destroy", { id: todo.id })
             })
         ]),
         h("input.edit", {
@@ -80,9 +83,9 @@ function todoItem(todo, evs) {
             // custom mutable operation into the tree to be
             // invoked at patch time
             "data-focus": todo.editing ? doMutableFocus : null,
-            "data-change": event(evs.todo, "textChange"),
-            "data-submit": event(evs.todo, "edit"),
-            "data-blur": event(evs.todo, "edit")
+            "data-change": event(evs.todo, "textChange", { id: todo.id }),
+            "data-submit": event(evs.todo, "edit", { id: todo.id }),
+            "data-blur": event(evs.todo, "edit", { id: todo.id })
         })
     ])
 }
