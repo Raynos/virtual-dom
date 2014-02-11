@@ -6,51 +6,99 @@ var Observ = require("./lib/observ.js")
 
 var defaultState = {
     todos: [],
-    route: "all"
+    route: "all",
+    todoField: ""
 }
 
-module.exports = State
+module.exports = {
+    fresh: freshState,
+    setRoute: setRoute,
+    toggleAll: toggleAll,
+    add: add,
+    setTodoField: setTodoField,
+    toggle: toggle,
+    destroy: destroy,
+    startEdit: startEdit,
+    finishEdit: finishEdit
+}
 
-function State(inputs, initialState) {
+function freshState(channels, initialState) {
     initialState = initialState || defaultState
 
-    var state = ObservHash({
+    return ObservHash({
         todos: ObservArray(initialState.todos),
         route: Observ(initialState.route),
-        evs: {
-            todos: uuid(),
-            todo: uuid()
-        }
+        todoField: Observ(initialState.todoField),
+        channels: channels
     })
-
-    inputs.route(function (route) {
-        state.route.set(route.hash)
-    })
-
-    inputs.todos.toggleAll(function (ev) {
-        state.todos.forEach(function(todo) {
-            todo.completed.set(!todo.completed())
-        })
-    })
-
-    inputs.todos.add(function () {
-
-    })
-
-    inputs.todos.textChange(function () {
-
-    })
-
-    TodoState(inputs.todo, state.todos)
-
-
-    return state
 }
 
-function TodoState(inputs, list) {
-    inputs.toggle
-    inputs.editing
-    inputs.destroy
-    inputs.textChange
-    inputs.edit
+function freshItem(title) {
+    return ObservHash({
+        id: uuid(),
+        title: Observ(title),
+        editing: Observ(false),
+        completed: Observ(false)
+    })
+}
+
+function setRoute(state, route) {
+    state.route.set(route.hash)
+}
+
+function toggleAll(state) {
+    state.todos.forEach(function (todo) {
+        todo.completed.set(!todo.completed())
+    })
+}
+
+function add(state, data, ev) {
+    state.todos.push(freshItem(ev.currentValue.newTodo))
+    state.todoField.set("")
+}
+
+function setTodoField(state, data, ev) {
+    state.todoField.set(ev.currentValue.newTodo)
+}
+
+function find(list, id) {
+    for (var i = 0; i < list.length; i++) {
+        var item = list[i]
+        if (item.id === id) {
+            return item
+        }
+    }
+
+    return null
+}
+
+function findIndex(list, id) {
+    for (var i = 0; i < list.length; i++) {
+        var item = list[i]
+        if (item.id === id) {
+            return i
+        }
+    }
+
+    return null
+}
+
+function toggle(state, delta) {
+    var item = find(state.todos, delta.id)
+    item.completed.set(delta.completed)
+}
+
+function startEdit(state, delta) {
+    var item = find(state.todos, delta.id)
+    item.editing.set(true)
+}
+
+function destroy(state, delta) {
+    var index = findIndex(state.todos, delta.id)
+    state.todos.splice(index, 1)
+}
+
+function finishEdit(state, delta, ev) {
+    var item = find(state.todos, delta.id)
+    item.title.set(ev.currentValue.title)
 }

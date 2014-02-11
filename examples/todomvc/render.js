@@ -1,26 +1,29 @@
 var h = require("virtual-dom/h")
+var event = require("dom-delegator/event")
+var valueEvent = require("dom-delegator/value-event")
+
 var partial = require("./lib/vdom-thunk.js")
 
 var footer = infoFooter()
 
-module.exports = App
+module.exports = render
 
 /* state is a plain JS object */
-function App(state) {
+function render(state) {
     return h(".todomvc-wrapper", [
         h("section.todoapp", [
-            partial(header, state.todoField, state.evs.todos),
-            partial(mainSection, state.todos, state.route, state.evs),
+            partial(header, state.todoField, state.channels),
+            partial(mainSection, state.todos, state.route, state.channels),
             partial(statsSection, state.todos, state.route)
         ]),
         footer
     ])
 }
 
-function header(todoField, evsTodos) {
+function header(todoField, channels) {
     return h("header.header", {
-        "data-submit": event(evsTodos, "add"),
-        "data-change": event(evsTodos, "textChange")
+        "data-submit": valueEvent(channels.add),
+        "data-change": valueEvent(channels.setTodoField)
     }, [
         h("h1", "Todos"),
         h("input.new-todo", {
@@ -32,7 +35,7 @@ function header(todoField, evsTodos) {
     ])
 }
 
-function mainSection(todos, route, evs) {
+function mainSection(todos, route, channels) {
     var allCompleted = todos.every(function (todo) {
         return todo.completed
     })
@@ -46,16 +49,16 @@ function mainSection(todos, route, evs) {
         h("input#toggle-all.toggle-all", {
             type: "checkbox",
             checked: allCompleted,
-            "data-change": event(evs.todos, "toggleAll")
+            "data-change": event(channels.toggleAll)
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul.todolist", visibleTodos.map(function (todo) {
-            return partial(todoItem, todo, evs)
+            return partial(todoItem, todo, channels)
         }))
     ])
 }
 
-function todoItem(todo, evs) {
+function todoItem(todo, channels) {
     var className = (todo.completed ? "completed " : "") +
         (todo.editing ? "editing" : "")
 
@@ -64,16 +67,16 @@ function todoItem(todo, evs) {
             h("input.toggle", {
                 type: "checkbox",
                 checked: todo.completed,
-                "data-change": event(evs.todo, "toggle", {
+                "data-change": event(channels.toggle, {
                     id: todo.id,
                     completed: todo.completed
                 })
             }),
             h("label", {
-                "data-dblclick": event(evs.todo, "editing", { id: todo.id })
+                "data-dblclick": event(channels.startEdit, { id: todo.id })
             }, todo.title),
             h("button.destroy", {
-                "data-click": event(evs.todo, "destroy", { id: todo.id })
+                "data-click": event(channels.destroy, { id: todo.id })
             })
         ]),
         h("input.edit", {
@@ -83,9 +86,8 @@ function todoItem(todo, evs) {
             // custom mutable operation into the tree to be
             // invoked at patch time
             "data-focus": todo.editing ? doMutableFocus : null,
-            "data-change": event(evs.todo, "textChange", { id: todo.id }),
-            "data-submit": event(evs.todo, "edit", { id: todo.id }),
-            "data-blur": event(evs.todo, "edit", { id: todo.id })
+            "data-submit": valueEvent(channels.finishEdit, { id: todo.id }),
+            "data-blur": valueEvent(channels.finishEdit, { id: todo.id })
         })
     ])
 }
@@ -135,9 +137,4 @@ function infoFooter() {
             h("a", { href: "http://todomvc.com" }, "TodoMVC")
         ])
     ])
-}
-
-// belongs in dom-delegator
-function event() {
-
 }
