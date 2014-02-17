@@ -12,6 +12,7 @@ var defaultState = {
 
 module.exports = {
     fresh: freshState,
+    freshItem: freshItem,
     setRoute: setRoute,
     toggleAll: toggleAll,
     add: add,
@@ -61,6 +62,26 @@ function setTodoField(state, data, ev) {
     state.todoField.set(ev.currentValue.newTodo)
 }
 
+function toggle(state, delta) {
+    var item = find(state.todos, delta.id)
+    item.completed.set(delta.completed)
+}
+
+function startEdit(state, delta) {
+    var item = find(state.todos, delta.id)
+    item.editing.set(true)
+}
+
+function destroy(state, delta) {
+    var index = findIndex(state.todos, delta.id)
+    state.todos.splice(index, 1)
+}
+
+function finishEdit(state, delta, ev) {
+    var item = find(state.todos, delta.id)
+    item.title.set(ev.currentValue.title)
+}
+
 function find(list, id) {
     for (var i = 0; i < list.length; i++) {
         var item = list[i]
@@ -81,24 +102,4 @@ function findIndex(list, id) {
     }
 
     return null
-}
-
-function toggle(state, delta) {
-    var item = find(state.todos, delta.id)
-    item.completed.set(delta.completed)
-}
-
-function startEdit(state, delta) {
-    var item = find(state.todos, delta.id)
-    item.editing.set(true)
-}
-
-function destroy(state, delta) {
-    var index = findIndex(state.todos, delta.id)
-    state.todos.splice(index, 1)
-}
-
-function finishEdit(state, delta, ev) {
-    var item = find(state.todos, delta.id)
-    item.title.set(ev.currentValue.title)
 }

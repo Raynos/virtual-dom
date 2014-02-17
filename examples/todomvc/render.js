@@ -2,6 +2,7 @@ var h = require("virtual-dom/h")
 var event = require("dom-delegator/event")
 var valueEvent = require("dom-delegator/value-event")
 
+var doMutableFocus = require("./lib/do-mutable-focus.js")
 var partial = require("./lib/vdom-thunk.js")
 
 var footer = infoFooter()
@@ -92,13 +93,6 @@ function todoItem(todo, channels) {
     ])
 }
 
-var document = require("global/document")
-
-function doMutableFocus(node, property) {
-    if (document.activeElement !== node) {
-        node.focus();
-    }
-}
 
 function statsSection(todos, route) {
     var todosLeft = todos.filter(function (todo) {

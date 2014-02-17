@@ -1,52 +1,42 @@
 var document = require("global/document")
-var Delegator = require("dom-delegator")
-var EventSource = require("geval/source")
-var HashRouter = require("hash-router")
-var extend = require("xtend")
 
 var main = require("./lib/main.js")
 
+var createInput = require("./input.js")
 var State = require("./state.js")
 var render = require("./render.js")
 
-var inputs = createInput()
-var state = State.fresh(inputs.channels, null)
-main(state, render, document.body)
+var surface = document.body
+var inputs = createInput(surface)
+var state = State.fresh(inputs.sinks, null)
+main(state, render, surface)
 
-transition(state, inputs.events, State)
+var events = inputs.events
 
-function createInput() {
-    var del = Delegator(document.body, [
-        "toggleAll", "add", "setTodoField", "toggle", "destroy",
-        "startEdit", "finishEdit"
-    ])
+transitionState(events.toggleAll, State.toggleAll)
+transitionState(events.add, State.add)
+transitionState(events.setTodoField, State.setTodoField)
+transitionState(events.toggle, State.toggle)
+transitionState(events.destroy, State.destroy)
+transitionState(events.startEdit, State.startEdit)
+transitionState(events.finishEdit, State.finishEdit)
+transitionState(events.setRoute, State.setRoute)
 
-    var router = HashRouter()
-    var hashEvent = EventSource(function (emit) {
-        router.on("hash", emit)
-    })
+function transitionState(input, fn) {
+    input(eventListener)
 
-    return {
-        channels: del.channels,
-        events: extend(del.events, {
-            setRoute: hashEvent
-        })
+    function eventListener(value) {
+        var values
+        // handle dom-delegator signature
+        if ("values" in value && "ev" in value) {
+            values = value.values
+            values.push(value.ev)
+        } else {
+            values = [value]
+        }
+
+        values.unshift(state)
+
+        fn.apply(null, values)
     }
-}
-
-function transition(state, events, fns) {
-    Object.keys(events).forEach(function (eventName) {
-        var event = events[eventName]
-        var fn = fns[eventName]
-
-        event(function (tuple) {
-            var values = tuple.values
-            var ev = tuple.ev
-
-            values.push(ev)
-            values.unshift(state)
-
-            fn.apply(null, values)
-        })
-    })
 }
