@@ -23,14 +23,14 @@ module.exports = {
     finishEdit: finishEdit
 }
 
-function freshState(channels, initialState) {
+function freshState(sinks, initialState) {
     initialState = initialState || defaultState
 
     return ObservHash({
         todos: ObservArray(initialState.todos),
         route: Observ(initialState.route),
         todoField: Observ(initialState.todoField),
-        channels: channels
+        sinks: sinks
     })
 }
 

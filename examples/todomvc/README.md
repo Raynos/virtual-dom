@@ -5,11 +5,11 @@ This is an example implementation of TodoMVC.
 The three pillars you need to build a web app are
 
  - State representation (M)
- - Visual Scene rendering (V)
+ - Declaring the Visual Scene (V)
  - Input handling (C)
 
 The three libraries we are using to represent these three pillars
-    are `observ-hash` , `virtual-dom` and `dom-delegator` 
+    are `observ-hash` , `virtual-dom` and `dom-delegator`
     respectively.
 
 ## Application structure

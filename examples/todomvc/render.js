@@ -13,18 +13,18 @@ module.exports = render
 function render(state) {
     return h(".todomvc-wrapper", [
         h("section.todoapp", [
-            partial(header, state.todoField, state.channels),
-            partial(mainSection, state.todos, state.route, state.channels),
+            partial(header, state.todoField, state.sinks),
+            partial(mainSection, state.todos, state.route, state.sinks),
             partial(statsSection, state.todos, state.route)
         ]),
         footer
     ])
 }
 
-function header(todoField, channels) {
+function header(todoField, sinks) {
     return h("header.header", {
-        "data-submit": valueEvent(channels.add),
-        "data-change": valueEvent(channels.setTodoField)
+        "data-submit": valueEvent(sinks.add),
+        "data-change": valueEvent(sinks.setTodoField)
     }, [
         h("h1", "Todos"),
         h("input.new-todo", {
@@ -36,7 +36,7 @@ function header(todoField, channels) {
     ])
 }
 
-function mainSection(todos, route, channels) {
+function mainSection(todos, route, sinks) {
     var allCompleted = todos.every(function (todo) {
         return todo.completed
     })
@@ -50,16 +50,16 @@ function mainSection(todos, route, channels) {
         h("input#toggle-all.toggle-all", {
             type: "checkbox",
             checked: allCompleted,
-            "data-change": event(channels.toggleAll)
+            "data-change": event(sinks.toggleAll)
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul.todolist", visibleTodos.map(function (todo) {
-            return partial(todoItem, todo, channels)
+            return partial(todoItem, todo, sinks)
         }))
     ])
 }
 
-function todoItem(todo, channels) {
+function todoItem(todo, sinks) {
     var className = (todo.completed ? "completed " : "") +
         (todo.editing ? "editing" : "")
 
@@ -68,16 +68,16 @@ function todoItem(todo, channels) {
             h("input.toggle", {
                 type: "checkbox",
                 checked: todo.completed,
-                "data-change": event(channels.toggle, {
+                "data-change": event(sinks.toggle, {
                     id: todo.id,
                     completed: todo.completed
                 })
             }),
             h("label", {
-                "data-dblclick": event(channels.startEdit, { id: todo.id })
+                "data-dblclick": event(sinks.startEdit, { id: todo.id })
             }, todo.title),
             h("button.destroy", {
-                "data-click": event(channels.destroy, { id: todo.id })
+                "data-click": event(sinks.destroy, { id: todo.id })
             })
         ]),
         h("input.edit", {
@@ -87,12 +87,11 @@ function todoItem(todo, channels) {
             // custom mutable operation into the tree to be
             // invoked at patch time
             "data-focus": todo.editing ? doMutableFocus : null,
-            "data-submit": valueEvent(channels.finishEdit, { id: todo.id }),
-            "data-blur": valueEvent(channels.finishEdit, { id: todo.id })
+            "data-submit": valueEvent(sinks.finishEdit, { id: todo.id }),
+            "data-blur": valueEvent(sinks.finishEdit, { id: todo.id })
         })
     ])
 }
-
 
 function statsSection(todos, route) {
     var todosLeft = todos.filter(function (todo) {
