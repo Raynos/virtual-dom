@@ -2,11 +2,13 @@ var Delegator = require("dom-delegator")
 var EventSource = require("geval/source")
 var HashRouter = require("hash-router")
 var extend = require("xtend")
+var EventSinks = require("event-sinks")
 
 module.exports = createInput
 
 function createInput(surface) {
-    var del = Delegator(surface, [
+    var del = Delegator(surface)
+    var events = EventSinks(del.id, [
         "toggleAll", "add", "setTodoField", "toggle", "destroy",
         "startEdit", "finishEdit"
     ])
@@ -17,8 +19,8 @@ function createInput(surface) {
     })
 
     return {
-        sinks: del.sinks,
-        events: extend(del.events, {
+        sinks: events.sinks,
+        events: extend(events, {
             setRoute: hashEvent
         })
     }
