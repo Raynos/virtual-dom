@@ -7,7 +7,7 @@ var isString = require("./lib/is-string")
 
 module.exports = render
 
-function render(virtualDom, opts) {
+function render(virtualDom, opts, isRecurse) {
     var doc = opts ? opts.document || globalDocument : globalDocument
     var warn = opts ? opts.warn : null
 
@@ -29,10 +29,14 @@ function render(virtualDom, opts) {
     var children = virtualDom.children
 
     for (var i = 0; i < children.length; i++) {
-        var childNode = render(children[i], opts)
+        var childNode = render(children[i], opts, true)
         if (childNode) {
             node.appendChild(childNode)
         }
+    }
+
+    if (opts && typeof opts.onNode === 'function' && !isRecurse) {
+        opts.onNode(node)
     }
 
     return node
